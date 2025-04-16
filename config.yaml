@@ -1,0 +1,23 @@
+vqvae:
+  encoder_h_dim: 128
+  res_h_dim: 64
+  num_res_layers: 2
+  k: 512
+  d: 64
+  beta: 0.25
+  pretrain_path: "path.pt"
+transformer:
+  num_heads: 4
+  num_layers: 4
+  num_classes: 85
+  use_rms_norm: false
+geotransformer:
+  pretrain_path: "model_path.pt"
+train:
+  num_epochs: 10
+  batch_size: 32
+  optimizer: "adam"
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  log_interval: 10
+  save_interval: 1
