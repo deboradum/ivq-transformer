@@ -1,4 +1,4 @@
-# GeoTransformer
+# Image Vector Quantized Transformer
 
 To clone, run
 
