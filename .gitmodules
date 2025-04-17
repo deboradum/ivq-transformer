@@ -1,0 +1,3 @@
+[submodule "vqvae"]
+	path = vqvae
+	url = git@github.com:deboradum/torch-vqvae2.git
