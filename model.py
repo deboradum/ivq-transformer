@@ -69,6 +69,7 @@ class GeoTransformer(nn.Module):
         num_classes,
         use_rms_norm,
     ):
+        super(GeoTransformer, self).__init__()
         self.encoder = VQVAE2(
             encoder_h_dim=encoder_h_dim,
             res_h_dim=res_h_dim,
@@ -78,10 +79,12 @@ class GeoTransformer(nn.Module):
             beta=beta,
         )
         self.layers = nn.Sequential(
-            TransformerBlock(
-                embedding_dim=d, num_heads=num_heads, rms_norm=use_rms_norm
-            )
-            for _ in range(num_transformer_layers)
+            *[
+                TransformerBlock(
+                    embedding_dim=d, num_heads=num_heads, rms_norm=use_rms_norm
+                )
+                for _ in range(num_transformer_layers)
+            ]
         )
         self.final_layer = nn.Linear(d, num_classes)
 
