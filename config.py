@@ -10,6 +10,7 @@ class VQVAEConfig:
     k: int
     d: int
     beta: float
+    pretrain_path: str
 
 
 @dataclass
@@ -48,7 +49,7 @@ def load_config(path: str) -> Config:
     with open(path, "r") as f:
         data = yaml.safe_load(f)
     return Config(
-        vqvae=VQVAEConfig(**data["vqvae"]),
+        vqvae=VQVAEConfig(**data["vqvae"]),  # Now accepts pretrain_path
         transformer=TransformerConfig(**data["transformer"]),
         geotransformer=GeoTransformerConfig(**data["geotransformer"]),
         train=TrainConfig(**data["train"]),

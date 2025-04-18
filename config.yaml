@@ -5,14 +5,14 @@ vqvae:
   k: 512
   d: 64
   beta: 0.25
-  pretrain_path: "path.pt"
+  pretrain_path: "vqvae_ckpt.pth"
 transformer:
   num_heads: 4
   num_layers: 4
   num_classes: 85
-  use_rms_norm: false
+  use_rms_norm: true
 geotransformer:
-  pretrain_path: "model_path.pt"
+  pretrain_path: "none"
 train:
   num_epochs: 10
   batch_size: 32
