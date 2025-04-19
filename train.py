@@ -147,7 +147,6 @@ def train_with_wandb(config: Config):
     config.train.optimizer = wandb_config.optimizer
     config.train.learning_rate = wandb_config.learning_rate
     config.train.weight_decay = wandb_config.weight_decay
-    config.train.batch_size = wandb_config.batch_size
     config.transformer.num_heads = wandb_config.num_transformer_heads
     config.transformer.num_layers = wandb_config.num_transformer_layers
     config.transformer.use_rms_norm = wandb_config.transformer_use_rms_norm

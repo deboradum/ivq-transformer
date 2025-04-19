@@ -22,6 +22,5 @@ sweep_config = {
             "min": 1e-4,
             "max": 1e-2,
         },
-        "batch_size": {"value": 32},
     },
 }
