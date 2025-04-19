@@ -1,6 +1,22 @@
+import torch
+
 import torch.nn as nn
 
 from vqvae.models import VQVAE2_large
+
+device = torch.device(
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps"
+    if torch.backends.mps.is_available()
+    else "cpu"
+)
+
+
+def create_additive_causal_mask(seq_len):
+    mask = torch.triu(torch.ones(seq_len, seq_len, device=device), diagonal=1)
+    mask = mask.masked_fill(mask == 1, float("-inf"))
+    return mask
 
 
 class FeedForward(nn.Module):
@@ -31,6 +47,7 @@ class TransformerBlock(nn.Module):
         self.attention = nn.MultiheadAttention(
             embedding_dim,
             num_heads,
+            batch_first=True,
         )
         self.norm2 = (
             nn.RMSNorm(embedding_dim) if rms_norm else nn.LayerNorm(embedding_dim)
@@ -39,12 +56,13 @@ class TransformerBlock(nn.Module):
         self.feedForward = FeedForward(embedding_dim, widening_factor=4)
 
     def forward(self, x):
+        # TODO: Pre- or post-norm? Check which one performs better
         x_ln = self.norm1(x)
         x_f = self.attention(
             x_ln,
             x_ln,
             x_ln,
-            mask=self.attention.create_additive_causal_mask(x.shape[1]),
+            attn_mask=create_additive_causal_mask(x.shape[1]),
         )
         x = x + x_f
 
@@ -93,7 +111,7 @@ class GeoTransformer(nn.Module):
         # TODO: also incorporate losses returned by the encoder
         h, *_, embeddings = self.encoder.encode(x)
         print("h.shape", h.shape)
-        print("embeddings", embeddings)
+        print("embeddings.shape", embeddings.shape)
         h = self.layers(embeddings)
         logits = self.final_layer(h)
 
