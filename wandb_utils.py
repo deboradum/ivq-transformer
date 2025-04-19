@@ -9,8 +9,8 @@ sweep_config = {
                 "adagrad",
             ]
         },
-        "num_transformer_heads": {"values": [2, 4, 8]},
-        "num_transformer_layers": {"values": [2, 4, 8]},
+        "num_transformer_heads": {"values": [4, 8]},
+        "num_transformer_layers": {"values": [4, 8]},
         "transformer_use_rms_norm": {"values": [True, False]},
         "learning_rate": {
             "distribution": "log_uniform_values",

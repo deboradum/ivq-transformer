@@ -7,6 +7,7 @@ import torchvision.transforms as transforms
 from config import Config
 from model import GeoTransformer
 
+from torchvision import datasets
 from torch.utils.data import DataLoader, random_split
 from torchvision.datasets import Caltech101
 
@@ -88,12 +89,53 @@ def get_loaders_Caltech101(batch_size):
     return train_loader, val_loader, test_loader, x_train_var
 
 
+def get_loaders_imagenet256(batch_size, data_dir="data/imagenet256"):
+    transform = transforms.Compose(
+        [
+            transforms.Resize((256, 256)),
+            transforms.Lambda(lambda x: x.convert("RGB")),
+            transforms.ToTensor(),
+        ]
+    )
+
+    full_dataset = datasets.ImageFolder(root=data_dir, transform=transform)
+
+    train_size = int(0.8 * len(full_dataset))
+    val_test_size = len(full_dataset) - train_size
+    val_size = val_test_size // 2
+    test_size = val_test_size - val_size
+
+    train_dataset, val_test_dataset = random_split(
+        full_dataset, [train_size, val_test_size]
+    )
+    val_dataset, test_dataset = random_split(val_test_dataset, [val_size, test_size])
+
+    train_loader = DataLoader(
+        train_dataset, batch_size=batch_size, shuffle=True, num_workers=0
+    )
+    val_loader = DataLoader(
+        val_dataset, batch_size=batch_size, shuffle=False, num_workers=0
+    )
+    test_loader = DataLoader(
+        test_dataset, batch_size=batch_size, shuffle=False, num_workers=0
+    )
+
+    # todo
+    x_train_var = 1.0472832505104722e-06
+
+    return train_loader, val_loader, test_loader, x_train_var
+
+
 def get_loaders(config):
     dataset_name = config.train.dataset_name
     batch_size = config.train.batch_size
 
     if dataset_name == "caltech101":
         train_loader, val_loader, test_loader, x_train_var = get_loaders_Caltech101(
+            batch_size
+        )
+    if dataset_name == "imagenet256":
+        train_loader, val_loader, test_loader, x_train_var = get_loaders_imagenet256(
             batch_size
         )
     else:

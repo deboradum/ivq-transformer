@@ -77,21 +77,17 @@ def train(
                 taken = time.time() - s
                 itps = taken / config.train.log_interval
 
-                # Get train metrics
                 avg_acc, avg_loss = get_avg_metrics(train_metrics, config.train.log_interval)
+                val_acc, val_loss = validate(net, val_loader, loss_fn)
                 if config.train.wandb_log:
                     wandb.log(
                         {
                             "train_loss": avg_loss,
                             "train_acc": avg_acc,
+                            "eval_loss": val_loss,
+                            "eval_acc": val_acc,
                             "global_step": global_step,
                         }
-                    )
-                # Get val metrics
-                val_acc, val_loss = validate(net, val_loader, loss_fn)
-                if config.train.wandb_log:
-                    wandb.log(
-                        {"eval_loss": val_loss, "eval_acc": val_acc, "global_step": global_step}
                     )
 
                 print(
