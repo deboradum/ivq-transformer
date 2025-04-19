@@ -1,4 +1,6 @@
 import yaml
+import dataclasses
+
 from dataclasses import dataclass
 
 
@@ -28,6 +30,8 @@ class GeoTransformerConfig:
 
 @dataclass
 class TrainConfig:
+    wandb_optimize: bool
+    wandb_log: bool
     num_epochs: int
     dataset_name: str
     batch_size: int
@@ -44,6 +48,9 @@ class Config:
     transformer: TransformerConfig
     geotransformer: GeoTransformerConfig
     train: TrainConfig
+
+    def to_dict(self):
+        return dataclasses.asdict(self)
 
 
 def load_config(path: str) -> Config:

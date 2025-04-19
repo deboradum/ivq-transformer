@@ -8,6 +8,7 @@ import torch.nn.functional as F
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 
+from wandb_utils import sweep_config
 from config import Config, load_config
 from utils import get_avg_metrics, get_optimizer, get_loaders, get_net
 
@@ -54,9 +55,14 @@ def train(
     loss_fn: callable,
     config: Config,
 ):
+    val_acc, val_loss = validate(net, val_loader, loss_fn)
+    if config.train.wandb_log:
+        wandb.log({"eval_loss": val_loss, "eval_acc": val_acc, "global_step": 0})
+
     s = time.time()
     for epoch in range(config.train.num_epochs):
         train_metrics = {"acc": [], "loss": []}
+        global_step = epoch * len(train_loader.dataset)  # Num training examples
         net.train(True)
         for i, (X, y) in enumerate(train_loader):
             X, y = X.to(device), y.to(device)
@@ -65,6 +71,7 @@ def train(
             loss = loss_fn(net, X, y, train_metrics)
             loss.backward()
             optimizer.step()
+            global_step += X.size(0)
 
             if i > 0 and i % config.train.log_interval == 0:
                 taken = time.time() - s
@@ -72,8 +79,20 @@ def train(
 
                 # Get train metrics
                 avg_acc, avg_loss = get_avg_metrics(train_metrics, config.train.log_interval)
+                if config.train.wandb_log:
+                    wandb.log(
+                        {
+                            "train_loss": avg_loss,
+                            "train_acc": avg_acc,
+                            "global_step": global_step,
+                        }
+                    )
                 # Get val metrics
                 val_acc, val_loss = validate(net, val_loader, loss_fn)
+                if config.train.wandb_log:
+                    wandb.log(
+                        {"eval_loss": val_loss, "eval_acc": val_acc, "global_step": global_step}
+                    )
 
                 print(
                     f"Epoch {epoch}, step {i}/{len(train_loader)} -",
@@ -90,15 +109,12 @@ def train(
 
     return validate(net, test_loader, loss_fn)
 
-if __name__ == "__main__":
-    config = load_config("config.yaml")
-
-    print("Getting model")
+def train_from_config(config: Config):
+    if config.train.wandb_log:
+        wandb.init(project="vqi_transformer", config=config)
     net = get_net(config)
     net.to(device)
     optimizer = get_optimizer(net, config)
-
-    print("Getting loaders")
     train_loader, val_loader, test_loader = get_loaders(config)
 
     print("Starting training")
@@ -115,3 +131,64 @@ if __name__ == "__main__":
     print(
         f"test loss: {test_loss:.5f}, test acc: {test_acc:.5f}"
     )
+    if config.train.wandb_log:
+        wandb.log(
+            {
+                "test_loss": test_loss,
+                "test_acc": test_acc,
+            }
+        )
+
+
+def train_with_wandb(config: Config):
+    wandb.init()
+    wandb_config = wandb.config
+
+    config.train.optimizer = wandb_config.optimizer
+    config.train.learning_rate = wandb_config.learning_rate
+    config.train.weight_decay = wandb_config.weight_decay
+    config.train.batch_size = wandb_config.batch_size
+    config.transformer.num_heads = wandb_config.num_transformer_heads
+    config.transformer.num_layers = wandb_config.num_transformer_layers
+    config.transformer.use_rms_norm = wandb_config.transformer_use_rms_norm
+    wandb.config.update(config.to_dict(), allow_val_change=True)
+
+    net = get_net(config)
+    net.to(device)
+    optimizer = get_optimizer(net, config)
+    train_loader, val_loader, test_loader = get_loaders(config)
+
+    print("Starting training")
+    test_acc, test_loss = train(
+        net=net,
+        optimizer=optimizer,
+        train_loader=train_loader,
+        val_loader=val_loader,
+        test_loader=test_loader,
+        loss_fn=loss_fn,
+        config=config,
+    )
+
+    print(
+        f"test loss: {test_loss:.5f}, test acc: {test_acc:.5f}"
+    )
+    wandb.log(
+        {
+            "test_loss": test_loss,
+            "test_acc": test_acc,
+        }
+    )
+    del net, optimizer, train_loader, val_loader, test_loader
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+
+
+if __name__ == "__main__":
+    config = load_config("config.yaml")
+
+    if config.train.wandb_optimize:
+        sweep_id = wandb.sweep(sweep_config, project="vqi_transformer")
+        wandb.agent(sweep_id, lambda: train_with_wandb(config), count=5)
+    else:
+        train_from_config(config)
