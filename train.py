@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader
 from config import Config, load_config
 from utils import get_avg_metrics, get_optimizer, get_loaders, get_net
 
+
 device = torch.device(
     "cuda"
     if torch.cuda.is_available()
@@ -83,7 +84,7 @@ def train(
                 s = time.time()
 
         if epoch % config.train.save_interval == 0:
-            model_path = f"checkpoint_epoch_{epoch}.npz"
+            model_path = f"checkpoint_epoch_{epoch}.pth"
             print(f"Saving model in {model_path}")
             torch.save(net.state_dict(), model_path)
 
