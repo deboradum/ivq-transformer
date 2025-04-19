@@ -60,7 +60,7 @@ def train(
             X, y = X.to(device), y.to(device)
 
             optimizer.zero_grad()
-            loss = loss_fn(net, X, train_metrics)
+            loss = loss_fn(net, X, y, train_metrics)
             loss.backward()
             optimizer.step()
 
@@ -90,10 +90,15 @@ def train(
 if __name__ == "__main__":
     config = load_config("config.yaml")
 
+    print("Getting model")
     net = get_net(config)
-    optimizer = get_optimizer(config)
+    net.to(device)
+    optimizer = get_optimizer(net, config)
+
+    print("Getting loaders")
     train_loader, val_loader, test_loader = get_loaders(config)
 
+    print("Starting training")
     test_acc, test_loss = train(
         net=net,
         optimizer=optimizer,

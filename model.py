@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-from vqvae.models import VQVAE2
+from vqvae.models import VQVAE2_large
 
 
 class FeedForward(nn.Module):
@@ -14,7 +14,7 @@ class FeedForward(nn.Module):
         self.silu = nn.SiLU()
         self.final = nn.Linear(dim, embedding_dim, bias=False)
 
-    def __call__(self, x):
+    def forward(self, x):
         x1 = self.l1(x)
         x2 = self.l2(x)
         x = self.silu(x1) * x2
@@ -38,7 +38,7 @@ class TransformerBlock(nn.Module):
 
         self.feedForward = FeedForward(embedding_dim, widening_factor=4)
 
-    def __call__(self, x):
+    def forward(self, x):
         x_ln = self.norm1(x)
         x_f = self.attention(
             x_ln,
@@ -70,7 +70,7 @@ class GeoTransformer(nn.Module):
         use_rms_norm,
     ):
         super(GeoTransformer, self).__init__()
-        self.encoder = VQVAE2(
+        self.encoder = VQVAE2_large(
             encoder_h_dim=encoder_h_dim,
             res_h_dim=res_h_dim,
             num_res_layers=num_res_layers,
@@ -88,9 +88,13 @@ class GeoTransformer(nn.Module):
         )
         self.final_layer = nn.Linear(d, num_classes)
 
-    def __cal__(self, x):
-        h = self.encoder.encode(x)
-        h = self.layers(h)
+    def forward(self, x):
+        print("x.shape", x.shape)
+        # TODO: also incorporate losses returned by the encoder
+        h, *_, embeddings = self.encoder.encode(x)
+        print("h.shape", h.shape)
+        print("embeddings", embeddings)
+        h = self.layers(embeddings)
         logits = self.final_layer(h)
 
         return logits[:, -1, :]  # Only check logits for last token
