@@ -22,8 +22,9 @@ device = torch.device(
 
 
 def loss_fn(model, X, y, metrics):
-    acc = (torch.argmax(model(X), dim=1) == y).float().mean()
-    loss = (F.cross_entropy(model(X), y)).mean()
+    logits = model(X)
+    acc = (torch.argmax(logits, dim=1) == y).float().mean()
+    loss = (F.cross_entropy(logits, y)).mean()
 
     metrics["acc"].append(acc.item())
     metrics["loss"].append(loss.item())
@@ -34,11 +35,11 @@ def loss_fn(model, X, y, metrics):
 def validate(net, loader, loss_fn):
     val_metrics = {"acc": [], "loss": []}
     net.train(False)
-    for X, y in loader:
-        X, y = X.to(device), y.to(device)
-        # X = X.permute(0, 2, 3, 1)
+    with torch.no_grad():
+        for X, y in loader:
+            X, y = X.to(device), y.to(device)
 
-        _ = loss_fn(net, X, y, val_metrics)
+            _ = loss_fn(net, X, y, val_metrics)
     avg_acc, avg_loss = get_avg_metrics(val_metrics, len(loader))
 
     return avg_acc, avg_loss
