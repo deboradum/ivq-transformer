@@ -11,7 +11,6 @@ from torch.utils.data import DataLoader
 from config import Config, load_config
 from utils import get_avg_metrics, get_optimizer, get_loaders, get_net
 
-
 device = torch.device(
     "cuda"
     if torch.cuda.is_available()
@@ -54,7 +53,7 @@ def train(
     loss_fn: callable,
     config: Config,
 ):
-    s = time.perf_counter()
+    s = time.time()
     for epoch in range(config.train.num_epochs):
         train_metrics = {"acc": [], "loss": []}
         net.train(True)
@@ -67,7 +66,7 @@ def train(
             optimizer.step()
 
             if i > 0 and i % config.train.log_interval == 0:
-                taken = time.perf_counter() - s
+                taken = time.time() - s
                 itps = taken / config.train.log_interval
 
                 # Get train metrics
@@ -77,11 +76,11 @@ def train(
 
                 print(
                     f"Epoch {epoch}, step {i}/{len(train_loader)} -",
-                    f"train loss: {avg_loss:.5f}, train acc: {avg_acc:.5f},"
-                    f"val loss: {val_loss:.5f}, val acc: {val_acc:.5f},"
-                    f"took {taken:.5f}s ({itps} it/s)"
+                    f"train loss: {avg_loss:.3f}, train acc: {avg_acc:.3f},"
+                    f"val loss: {val_loss:.3f}, val acc: {val_acc:.3f},"
+                    f"took {taken:.2f}s ({itps:.2f} it/s)"
                 )
-                s = time.perf_counter()
+                s = time.time()
 
         if epoch % config.train.save_interval == 0:
             model_path = f"checkpoint_epoch_{epoch}.npz"
