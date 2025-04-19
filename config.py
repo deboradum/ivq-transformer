@@ -29,6 +29,7 @@ class GeoTransformerConfig:
 @dataclass
 class TrainConfig:
     num_epochs: int
+    dataset_name: str
     batch_size: int
     optimizer: str
     learning_rate: float
