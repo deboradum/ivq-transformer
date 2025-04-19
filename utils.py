@@ -22,7 +22,6 @@ def get_avg_metrics(metrics, window):
     return avg_acc, avg_loss
 
 
-# TODO: in the future perhaps add lr scheduling?
 def get_optimizer(net, config: Config):
     if config.train.optimizer == "adam":
         optimizer = optim.Adam(params=net.parameters(), lr=config.train.learning_rate)
@@ -104,6 +103,14 @@ def get_loaders(config):
 
 
 def get_net(config: Config):
+    device = torch.device(
+        "cuda"
+        if torch.cuda.is_available()
+        else "mps"
+        if torch.backends.mps.is_available()
+        else "cpu"
+    )
+
     net = GeoTransformer(
         encoder_h_dim=config.vqvae.encoder_h_dim,
         res_h_dim=config.vqvae.res_h_dim,
@@ -121,7 +128,7 @@ def get_net(config: Config):
     if os.path.isfile(config.vqvae.pretrain_path):
         print(f"Loading vqvae model weights from {config.vqvae.pretrain_path}")
         net.encoder.load_state_dict(
-            torch.load(config.vqvae.pretrain_path, weights_only=True)
+            torch.load(config.vqvae.pretrain_path, weights_only=True, map_location=device)
         )
     # Load GeoTransformer parameters from file
     if os.path.isfile(config.geotransformer.pretrain_path):
@@ -129,7 +136,7 @@ def get_net(config: Config):
             f"Loading ivq-transformer model weights from {config.geotransformer.pretrain_path}"
         )
         net.load_state_dict(
-            torch.load(config.geotransformer.pretrain_path, weights_only=True)
+            torch.load(config.geotransformer.pretrain_path, weights_only=True, map_location=device)
         )
 
     return net
