@@ -56,7 +56,6 @@ class TransformerBlock(nn.Module):
         self.feedForward = FeedForward(embedding_dim, widening_factor=4)
 
     def forward(self, x):
-        # TODO: Pre- or post-norm? Check which one performs better
         x_ln = self.norm1(x)
         x_f, _ = self.attention(
             x_ln,
@@ -107,7 +106,6 @@ class GeoTransformer(nn.Module):
         self.final_layer = nn.Linear(d, num_classes)
 
     def forward(self, x):
-        # TODO: also incorporate losses returned by the encoder
         h, *_, embeddings = self.encoder.encode(x)
         h = self.layers(embeddings)
         logits = self.final_layer(h)

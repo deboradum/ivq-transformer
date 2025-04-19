@@ -44,7 +44,7 @@ def get_optimizer(net, config: Config):
 def get_loaders_Caltech101(batch_size):
     transform = transforms.Compose(
         [
-            transforms.Resize((1024, 1024)),
+            transforms.Resize((256, 256)),
             transforms.Lambda(lambda x: x.convert("RGB")),
             transforms.ToTensor(),
         ]
