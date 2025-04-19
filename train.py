@@ -25,8 +25,8 @@ def loss_fn(model, X, y, metrics):
     acc = (torch.argmax(model(X), dim=1) == y).float().mean()
     loss = (F.cross_entropy(model(X), y)).mean()
 
-    metrics["acc"].append(acc)
-    metrics["loss"].append(loss)
+    metrics["acc"].append(acc.item())
+    metrics["loss"].append(loss.item())
 
     return loss
 
@@ -75,6 +75,7 @@ def train(
                 val_acc, val_loss = validate(net, val_loader, loss_fn)
 
                 print(
+                    f"Epoch {epoch}, step {i}/{len(train_loader)} -",
                     f"train loss: {avg_loss:.5f}, train acc: {avg_acc:.5f},"
                     f"val loss: {val_loss:.5f}, val acc: {val_acc:.5f},"
                     f"took {taken:.5f}s ({itps} it/s)"
