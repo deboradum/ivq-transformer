@@ -58,7 +58,7 @@ class TransformerBlock(nn.Module):
     def forward(self, x):
         # TODO: Pre- or post-norm? Check which one performs better
         x_ln = self.norm1(x)
-        x_f = self.attention(
+        x_f, _ = self.attention(
             x_ln,
             x_ln,
             x_ln,
@@ -107,11 +107,8 @@ class GeoTransformer(nn.Module):
         self.final_layer = nn.Linear(d, num_classes)
 
     def forward(self, x):
-        print("x.shape", x.shape)
         # TODO: also incorporate losses returned by the encoder
         h, *_, embeddings = self.encoder.encode(x)
-        print("h.shape", h.shape)
-        print("embeddings.shape", embeddings.shape)
         h = self.layers(embeddings)
         logits = self.final_layer(h)
 

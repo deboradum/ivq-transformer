@@ -3,6 +3,7 @@ import torch
 import wandb
 
 import torch.nn as nn
+import torch.nn.functional as F
 
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
@@ -21,8 +22,8 @@ device = torch.device(
 
 
 def loss_fn(model, X, y, metrics):
-    acc = torch.mean(torch.argmax(model(X), dim=1) == y)
-    loss = torch.mean(nn.losses.cross_entropy(model(X), y))
+    acc = (torch.argmax(model(X), dim=1) == y).float().mean()
+    loss = (F.cross_entropy(model(X), y)).mean()
 
     metrics["acc"].append(acc)
     metrics["loss"].append(loss)
