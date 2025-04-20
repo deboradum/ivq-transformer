@@ -9,7 +9,7 @@ vqvae:
 transformer:
   num_heads: 4
   num_layers: 4
-  num_classes: 102
+  num_classes: 1000
   use_rms_norm: true
 geotransformer:
   pretrain_path: "none"
@@ -17,10 +17,11 @@ train:
   wandb_optimize: true
   wandb_log: true
   num_epochs: 5
+  patience: 5
   dataset_name: "imagenet256"
-  batch_size: 256
+  batch_size: 128
   optimizer: "adam"
   learning_rate: 0.0001
   weight_decay: 0.0001
-  log_interval: 50
-  save_interval: 1
+  log_interval: 250
+  save_interval: -1

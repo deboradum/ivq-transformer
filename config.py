@@ -33,6 +33,7 @@ class TrainConfig:
     wandb_optimize: bool
     wandb_log: bool
     num_epochs: int
+    patience: int
     dataset_name: str
     batch_size: int
     optimizer: str

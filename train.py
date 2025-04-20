@@ -59,6 +59,11 @@ def train(
     if config.train.wandb_log:
         wandb.log({"eval_loss": val_loss, "eval_acc": val_acc, "global_step": 0})
 
+    best_val_loss = val_loss
+    best_model_path = "best_model.pth"
+    patience_counter = 0
+    torch.save(net.state_dict(), best_model_path)
+
     s = time.time()
     for epoch in range(config.train.num_epochs):
         train_metrics = {"acc": [], "loss": []}
@@ -96,14 +101,31 @@ def train(
                     f"val loss: {val_loss:.3f}, val acc: {val_acc:.3f},"
                     f"took {taken:.2f}s ({itps:.2f} it/s)"
                 )
+
+                # Patience stuff
+                if val_loss < best_val_loss:
+                    best_val_loss = val_loss
+                    patience_counter = 0
+                    torch.save(net.state_dict(), best_model_path)
+                else:
+                    patience_counter += 1
+                if patience_counter >= config.train.patience:
+                    print("Early stopping")
+                    break
+
                 s = time.time()
 
-        if epoch % config.train.save_interval == 0:
+        if epoch % config.train.save_interval == 0 and config.train.save_interval != -1:
             model_path = f"checkpoint_epoch_{epoch}.pth"
             print(f"Saving model in {model_path}")
             torch.save(net.state_dict(), model_path)
 
+        if patience_counter >= config.train.patience:
+            break
+
+    net.load_state_dict(torch.load(best_model_path))
     return validate(net, test_loader, loss_fn)
+
 
 def train_from_config(config: Config):
     if config.train.wandb_log:
