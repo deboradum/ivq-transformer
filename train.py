@@ -23,7 +23,7 @@ device = torch.device(
 
 
 def loss_fn(model, X, y, metrics):
-    logits = model(X)
+    logits, vqvae_loss = model(X)
     acc = (torch.argmax(logits, dim=1) == y).float().mean()
     loss = (F.cross_entropy(logits, y)).mean()
 
@@ -31,6 +31,7 @@ def loss_fn(model, X, y, metrics):
     metrics["loss"].append(loss.item())
 
     return loss
+    # return loss + vqvae_loss
 
 
 def validate(net, loader, loss_fn):

@@ -106,8 +106,10 @@ class GeoTransformer(nn.Module):
         self.final_layer = nn.Linear(d, num_classes)
 
     def forward(self, x):
-        h, *_, embeddings = self.encoder.encode(x)
+        h, *losses, _, embeddings = self.encoder.encode(x)
         h = self.layers(embeddings)
         logits = self.final_layer(h)
 
-        return logits[:, -1, :]  # Only check logits for last token
+        vqvae_loss = sum(losses)
+
+        return logits[:, -1, :], vqvae_loss

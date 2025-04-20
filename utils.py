@@ -66,13 +66,13 @@ def get_loaders_Caltech101(batch_size):
     val_dataset, test_dataset = random_split(val_test_dataset, [val_size, test_size])
 
     train_loader = DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=True, num_workers=0
+        train_dataset, batch_size=batch_size, shuffle=True, num_workers=2
     )
     val_loader = DataLoader(
-        val_dataset, batch_size=batch_size, shuffle=False, num_workers=0
+        val_dataset, batch_size=batch_size, shuffle=False, num_workers=2
     )
     test_loader = DataLoader(
-        test_dataset, batch_size=batch_size, shuffle=False, num_workers=0
+        test_dataset, batch_size=batch_size, shuffle=False, num_workers=2
     )
 
     x_train_var = 1.0472832505104722e-06
@@ -93,7 +93,6 @@ def get_loaders_imagenet256(batch_size, data_dir="data/imagenet256"):
     transform = transforms.Compose(
         [
             transforms.Resize((256, 256)),
-            transforms.Lambda(lambda x: x.convert("RGB")),
             transforms.ToTensor(),
         ]
     )
@@ -111,13 +110,13 @@ def get_loaders_imagenet256(batch_size, data_dir="data/imagenet256"):
     val_dataset, test_dataset = random_split(val_test_dataset, [val_size, test_size])
 
     train_loader = DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=True, num_workers=0
+        train_dataset, batch_size=batch_size, shuffle=True, num_workers=2
     )
     val_loader = DataLoader(
-        val_dataset, batch_size=batch_size, shuffle=False, num_workers=0
+        val_dataset, batch_size=batch_size, shuffle=False, num_workers=2
     )
     test_loader = DataLoader(
-        test_dataset, batch_size=batch_size, shuffle=False, num_workers=0
+        test_dataset, batch_size=batch_size, shuffle=False, num_workers=2
     )
 
     # todo
