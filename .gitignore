@@ -1,4 +1,8 @@
-__pycache__
-.DS_Store
-*.pth
+# Files and dirs
+__pycache__/
 data/
+wandb/
+.DS_Store
+
+# File types
+*.pth
