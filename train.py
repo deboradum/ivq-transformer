@@ -7,7 +7,7 @@ import torch.nn.functional as F
 
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
-from torch.cuda.amp import autocast, GradScaler
+from torch.amp import autocast, GradScaler
 
 from wandb_utils import sweep_config
 from config import Config, load_config
@@ -75,7 +75,7 @@ def train(
             X, y = X.to(device), y.to(device)
 
             optimizer.zero_grad()
-            with autocast(enabled=config.train.fp16):
+            with autocast(device_type=device.type, enabled=config.train.fp16):
                 loss = loss_fn(net, X, y, train_metrics)
             scaler.scale(loss).backward()
             scaler.step(optimizer)
@@ -84,7 +84,7 @@ def train(
 
             if i > 0 and i % config.train.log_interval == 0:
                 taken = time.time() - s
-                itps = taken / config.train.log_interval
+                itps = config.train.log_interval / taken
 
                 avg_acc, avg_loss = get_avg_metrics(train_metrics, config.train.log_interval)
                 val_acc, val_loss = validate(net, val_loader, loss_fn)
