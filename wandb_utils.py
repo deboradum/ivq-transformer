@@ -12,6 +12,7 @@ sweep_config = {
         "num_transformer_heads": {"values": [8]},
         "num_transformer_layers": {"values": [8]},
         "transformer_use_rms_norm": {"values": [True, False]},
+        "use_fp16": {"values": [True, False]},
         "learning_rate": {
             "distribution": "log_uniform_values",
             "min": 5e-5,

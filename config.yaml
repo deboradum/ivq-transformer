@@ -16,7 +16,7 @@ geotransformer:
 train:
   wandb_optimize: true
   wandb_log: true
-  fp16: true
+  fp16: false
   num_epochs: 5
   patience: 5
   dataset_name: "imagenet256"
@@ -24,5 +24,5 @@ train:
   optimizer: "adam"
   learning_rate: 0.0001
   weight_decay: 0.0001
-  log_interval: 250
+  log_interval: 10000
   save_interval: -1

@@ -56,6 +56,7 @@ def train(
     test_loader: DataLoader,
     loss_fn: callable,
     config: Config,
+    scaler: GradScaler,
 ):
     val_acc, val_loss = validate(net, val_loader, loss_fn)
     if config.train.wandb_log:
@@ -131,7 +132,7 @@ def train(
     return validate(net, test_loader, loss_fn)
 
 
-def train_from_config(config: Config):
+def train_from_config(config: Config, scaler: GradScaler):
     if config.train.wandb_log:
         wandb.init(project="vqi_transformer", config=config)
     net = get_net(config)
@@ -148,6 +149,7 @@ def train_from_config(config: Config):
         test_loader=test_loader,
         loss_fn=loss_fn,
         config=config,
+        scaler=scaler,
     )
 
     print(
@@ -166,6 +168,7 @@ def train_with_wandb(config: Config):
     wandb.init()
     wandb_config = wandb.config
 
+    config.train.fp16 = wandb_config.use_fp16
     config.train.optimizer = wandb_config.optimizer
     config.train.learning_rate = wandb_config.learning_rate
     config.train.weight_decay = wandb_config.weight_decay
@@ -188,6 +191,7 @@ def train_with_wandb(config: Config):
         test_loader=test_loader,
         loss_fn=loss_fn,
         config=config,
+        scaler=GradScaler(enabled=config.train.fp16),
     )
 
     print(
@@ -207,10 +211,11 @@ def train_with_wandb(config: Config):
 
 if __name__ == "__main__":
     config = load_config("config.yaml")
-    scaler = GradScaler(enabled=config.train.fp16)
 
     if config.train.wandb_optimize:
         sweep_id = wandb.sweep(sweep_config, project="vqi_transformer_1024")
+        # Scaler does not need to be passed since it is set by wandb config
         wandb.agent(sweep_id, lambda: train_with_wandb(config), count=5)
     else:
-        train_from_config(config)
+        scaler = GradScaler(enabled=config.train.fp16)
+        train_from_config(config, scaler)
