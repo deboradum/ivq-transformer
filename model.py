@@ -95,6 +95,8 @@ class GeoTransformer(nn.Module):
             d=d,
             beta=beta,
         )
+        for param in self.encoder.parameters():
+            param.requires_grad = False
         self.layers = nn.Sequential(
             *[
                 TransformerBlock(
@@ -106,7 +108,8 @@ class GeoTransformer(nn.Module):
         self.final_layer = nn.Linear(d, num_classes)
 
     def forward(self, x):
-        h, *losses, _, embeddings = self.encoder.encode(x)
+        with torch.no_grad():
+            h, *losses, _, embeddings = self.encoder.encode(x)
         h = self.layers(embeddings)
         logits = self.final_layer(h)
 
