@@ -32,6 +32,7 @@ class GeoTransformerConfig:
 class TrainConfig:
     wandb_optimize: bool
     wandb_log: bool
+    fp16: bool
     num_epochs: int
     patience: int
     dataset_name: str

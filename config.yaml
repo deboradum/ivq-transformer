@@ -2,10 +2,10 @@ vqvae:
   encoder_h_dim: 128
   res_h_dim: 64
   num_res_layers: 2
-  k: 512
+  k: 1024
   d: 64
   beta: 0.25
-  pretrain_path: "checkpoint_epoch_7.pth"
+  pretrain_path: "1024_vqvae.pth"
 transformer:
   num_heads: 4
   num_layers: 4
@@ -16,10 +16,11 @@ geotransformer:
 train:
   wandb_optimize: true
   wandb_log: true
+  fp16: true
   num_epochs: 5
   patience: 5
   dataset_name: "imagenet256"
-  batch_size: 128
+  batch_size: 20
   optimizer: "adam"
   learning_rate: 0.0001
   weight_decay: 0.0001

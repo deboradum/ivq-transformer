@@ -7,6 +7,7 @@ import torch.nn.functional as F
 
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
+from torch.cuda.amp import autocast, GradScaler
 
 from wandb_utils import sweep_config
 from config import Config, load_config
@@ -74,9 +75,11 @@ def train(
             X, y = X.to(device), y.to(device)
 
             optimizer.zero_grad()
-            loss = loss_fn(net, X, y, train_metrics)
-            loss.backward()
-            optimizer.step()
+            with autocast(enabled=config.train.fp16):
+                loss = loss_fn(net, X, y, train_metrics)
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
             global_step += X.size(0)
 
             if i > 0 and i % config.train.log_interval == 0:
@@ -204,9 +207,10 @@ def train_with_wandb(config: Config):
 
 if __name__ == "__main__":
     config = load_config("config.yaml")
+    scaler = GradScaler(enabled=config.train.fp16)
 
     if config.train.wandb_optimize:
-        sweep_id = wandb.sweep(sweep_config, project="vqi_transformer")
+        sweep_id = wandb.sweep(sweep_config, project="vqi_transformer_1024")
         wandb.agent(sweep_id, lambda: train_with_wandb(config), count=5)
     else:
         train_from_config(config)

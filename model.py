@@ -2,7 +2,7 @@ import torch
 
 import torch.nn as nn
 
-from vqvae.models import VQVAE2_large
+from vqvae.models import VQVAE2_large, VQVAE2
 
 device = torch.device(
     "cuda"
@@ -87,7 +87,7 @@ class GeoTransformer(nn.Module):
         use_rms_norm,
     ):
         super(GeoTransformer, self).__init__()
-        self.encoder = VQVAE2_large(
+        self.encoder = VQVAE2(
             encoder_h_dim=encoder_h_dim,
             res_h_dim=res_h_dim,
             num_res_layers=num_res_layers,
